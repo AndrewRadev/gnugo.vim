@@ -1,3 +1,5 @@
+" TODO (2016-09-11) Gnugo buffer as a separate object, or just the id?
+
 function! gnugo#InitRunner()
   return {
         \ 'output':  [],
