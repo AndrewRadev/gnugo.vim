@@ -3,4 +3,7 @@
 " TODO (2016-09-11) One-player mode vs two-player -- chose color,
 " black/white/two-player
 
-command! -buffer -nargs=* Play call b:runner.Execute(<q-args>)
+command! -buffer -nargs=* Execute call b:runner.Execute(<q-args>)
+command! -buffer -nargs=* Move    call b:runner.Move(<q-args>)
+command! -buffer -nargs=* Undo    call b:runner.Undo()
+command! -buffer -nargs=0 Cheat   call b:runner.Cheat()
