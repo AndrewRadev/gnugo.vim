@@ -22,6 +22,9 @@ function! gnugo#runner#New(type)
         \ 'Cheat':      function('gnugo#runner#Cheat'),
         \ 'Undo':       function('gnugo#runner#Undo'),
         \
+        \ 'Read':  function('gnugo#runner#Read'),
+        \ 'Write': function('gnugo#runner#Write'),
+        \
         \ 'Expect':       function('gnugo#runner#Expect'),
         \ 'HandleOutput': function('gnugo#runner#HandleOutput'),
         \ 'HandleError':  function('gnugo#runner#HandleError'),
@@ -52,9 +55,13 @@ function! gnugo#runner#Execute(command) dict
 
   if a:command =~ '^\s*play'
     " we won't get the move in the result, take it from the command:
-    let self.last_move_location = matchstr(a:command, 'play\s*\(black\|white\)\s*\zs\w\d\+\ze')
+    let move_location = matchstr(a:command, 'play\s*\(black\|white\)\s*\zs\w\d\+\ze')
   else
-    let self.last_move_location = substitute(result[-1], '^= \(.*\)', '\1', '')
+    let move_location = substitute(result[-1], '^= \(.*\)', '\1', '')
+  endif
+
+  if move_location !~ '^\s*$'
+    let self.last_move_location = move_location
   endif
 
   call self.Redraw()
@@ -97,8 +104,6 @@ function! gnugo#runner#PlayCursor() dict
   endif
   let column = getline('.')[col('.') - 1]
   call winrestview(saved_position)
-
-  echomsg string([column, line])
 
   call self.Play(column.line)
 endfunction
@@ -146,18 +151,16 @@ function! gnugo#runner#Redraw() dict
 
   let output = []
   call extend(output, [
-        \ '= Last command: '.self.last_command,
-        \ '= Location:     '.self.last_move_location,
+        \ '= Last command:  '.self.last_command,
+        \ '= Last location: '.self.last_move_location,
         \ ])
   call extend(output, board)
 
   let saved_view = winsaveview()
-  set noreadonly
   normal! ggdG
   call setline(1, output)
   normal! gg
   set nomodified
-  set readonly
   call winrestview(saved_view)
 endfunction
 
@@ -226,4 +229,16 @@ function! gnugo#runner#Expect(params) dict
   let self.output = self.output[(found_offset + 1):]
 
   return [result, 1]
+endfunction
+
+function! gnugo#runner#Write(filename) dict
+  if self.Execute('printsgf '.a:filename)
+    exe 'file '.a:filename
+  endif
+endfunction
+
+function! gnugo#runner#Read(filename) dict
+  if self.Execute('loadsgf '.a:filename)
+    exe 'file '.a:filename
+  endif
 endfunction
