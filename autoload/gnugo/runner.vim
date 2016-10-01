@@ -1,4 +1,9 @@
 function! gnugo#runner#New(type)
+  if index(['black', 'white', 'manual'], a:type) < 0
+    echoerr "Game type can only be one of: black, white, manual"
+    return {}
+  endif
+
   return {
         \ 'output':  [],
         \ 'job':     v:null,
@@ -11,10 +16,11 @@ function! gnugo#runner#New(type)
         \ 'Start':  function('gnugo#runner#Start'),
         \ 'Redraw': function('gnugo#runner#Redraw'),
         \
-        \ 'Execute': function('gnugo#runner#Execute'),
-        \ 'Move':    function('gnugo#runner#Move'),
-        \ 'Cheat':   function('gnugo#runner#Cheat'),
-        \ 'Undo':    function('gnugo#runner#Undo'),
+        \ 'Execute':    function('gnugo#runner#Execute'),
+        \ 'Play':       function('gnugo#runner#Play'),
+        \ 'PlayCursor': function('gnugo#runner#PlayCursor'),
+        \ 'Cheat':      function('gnugo#runner#Cheat'),
+        \ 'Undo':       function('gnugo#runner#Undo'),
         \
         \ 'Expect':       function('gnugo#runner#Expect'),
         \ 'HandleOutput': function('gnugo#runner#HandleOutput'),
@@ -39,7 +45,7 @@ function! gnugo#runner#Execute(command) dict
 
   if !success
     echoerr join(result, "\n")
-    return
+    return 0
   endif
 
   let self.last_command = a:command
@@ -52,6 +58,79 @@ function! gnugo#runner#Execute(command) dict
   endif
 
   call self.Redraw()
+  return 1
+endfunction
+
+function! gnugo#runner#Play(location) dict
+  if self.type == 'manual'
+    echoerr "In manual mode, use the :Execute command"
+  endif
+
+  let color = self.type
+
+  if color == 'black'
+    let other_color = 'white'
+  else
+    let other_color = 'black'
+  endif
+
+  return
+        \ self.Execute('play '.color.' '.a:location) &&
+        \ self.Execute('genmove '.other_color)
+endfunction
+
+function! gnugo#runner#PlayCursor() dict
+  if self.type == 'manual'
+    echoerr "In manual mode, use the :Execute command"
+  endif
+
+  " Find the board line of the cursor:
+  let line = matchstr(getline('.'), '^\s*\zs\d\+\ze ')
+  if line == ''
+    return
+  endif
+
+  " Find the board column of the cursor:
+  let saved_position = winsaveview()
+  if search('\%'.col('.').'c[A-T]', 'W') <= 0
+    return
+  endif
+  let column = getline('.')[col('.') - 1]
+  call winrestview(saved_position)
+
+  echomsg string([column, line])
+
+  call self.Play(column.line)
+endfunction
+
+function! gnugo#runner#Cheat() dict
+  if self.type == 'manual'
+    echoerr "In manual mode, use the :Execute command"
+  endif
+
+  let color = self.type
+
+  if color == 'black'
+    let other_color = 'white'
+  else
+    let other_color = 'black'
+  endif
+
+  return
+        \ self.Execute('genmove '.color) &&
+        \ self.Execute('genmove '.other_color)
+endfunction
+
+function! gnugo#runner#Undo() dict
+  if self.type == 'manual'
+    " undo the last move
+    return self.Execute('undo')
+  else
+    " undo both computer and player move
+    return
+          \ self.Execute('undo') &&
+          \ self.Execute('undo')
+  endif
 endfunction
 
 function! gnugo#runner#Redraw() dict
@@ -72,10 +151,14 @@ function! gnugo#runner#Redraw() dict
         \ ])
   call extend(output, board)
 
+  let saved_view = winsaveview()
+  set noreadonly
   normal! ggdG
   call setline(1, output)
   normal! gg
   set nomodified
+  set readonly
+  call winrestview(saved_view)
 endfunction
 
 function! gnugo#runner#HandleOutput(unused, line) dict

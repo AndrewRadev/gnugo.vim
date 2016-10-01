@@ -15,11 +15,19 @@ function! s:Gnugo(...)
     let game_type = 'black'
   endif
 
+  let runner = gnugo#runner#New(game_type)
+  if empty(runner)
+    return
+  endif
+
   call gnugo#InitBuffer()
 
-  let b:runner = gnugo#runner#New(game_type)
+  let b:runner = runner
   call b:runner.Start()
   call b:runner.Redraw()
+
+  " position cursor in a sensible place
+  call cursor(20, 10)
 endfunction
 function! s:GnugoComplete(A, L, P)
   return join(['black', 'white', 'manual'], "\n")

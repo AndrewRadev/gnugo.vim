@@ -13,6 +13,14 @@ syn match Message "\s*BLACK (X) has captured \d\+ stones"
 syn match Message "^=.*"
 syn match Column "\s*\d\+\s*"
 
+hi CursorColumn
+      \ ctermfg=Red ctermbg=NONE cterm=NONE
+      \ guifg=Red guibg=NONE gui=NONE
+
+hi CursorLine
+      \ ctermfg=Red ctermbg=NONE cterm=NONE
+      \ guifg=Red guibg=NONE gui=NONE
+
 hi Black
       \ ctermbg=Black ctermfg=White
       \ guibg=Black guifg=White
