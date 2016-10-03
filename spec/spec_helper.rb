@@ -16,4 +16,9 @@ end
 
 RSpec.configure do |config|
   config.include Support::Vim
+
+  config.after :each do
+    vim.command 'new'
+    vim.command 'only'
+  end
 end
