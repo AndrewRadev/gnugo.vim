@@ -14,6 +14,7 @@ function! gnugo#runner#New(mode)
         \ 'last_move_location': '',
         \
         \ 'Start':      function('gnugo#runner#Start'),
+        \ 'Quit':       function('gnugo#runner#Quit'),
         \ 'Redraw':     function('gnugo#runner#Redraw'),
         \ 'ChangeMode': function('gnugo#runner#ChangeMode'),
         \
@@ -38,6 +39,18 @@ function! gnugo#runner#Start() dict
         \ 'err_cb': function(self.HandleError),
         \ })
   let self.channel = job_info(self.job).channel
+endfunction
+
+function! gnugo#runner#Quit() dict
+  call ch_sendraw(self.channel, "quit\n")
+  let [result, success] = self.Expect({
+        \ 'success': '^=',
+        \ 'failure': '^?'
+        \ })
+
+  if !success
+    echoerr join(result, "\n")
+  endif
 endfunction
 
 function! gnugo#runner#ChangeMode(mode) dict

@@ -17,3 +17,4 @@ nnoremap <silent> <buffer> o    :call b:runner.PlayCursor()<cr>
 nnoremap <silent> <buffer> x    :call b:runner.PlayCursor()<cr>
 
 autocmd BufWriteCmd <buffer> call b:runner.Write(expand('<afile>'))
+autocmd QuitPre     <buffer> call b:runner.Quit()
