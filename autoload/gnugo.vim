@@ -6,7 +6,7 @@ function! gnugo#Init(edit_command, game_type)
 
   if a:edit_command != ''
     exe a:edit_command
-    24wincmd _
+    25wincmd _
   endif
 
   set filetype=gnugo
@@ -17,13 +17,13 @@ function! gnugo#Init(edit_command, game_type)
   call b:runner.Redraw()
 
   " position cursor in a sensible place
-  call cursor(20, 10)
+  call cursor(21, 10)
 endfunction
 
 " TODO (2016-10-01) How to figure out the color?
 
 function! gnugo#CreateSgfFile(filename)
-  call gnugo#Init('', 'black')
+  call gnugo#Init('', 'manual')
 
   if confirm("Start new GnuGo game?")
     let b:runner.Write(a:filename)
@@ -36,7 +36,7 @@ function! gnugo#ReadSgfFile(filename)
   endif
 
   if confirm("Load saved GnuGo game?")
-    call gnugo#Init('', 'black')
+    call gnugo#Init('', 'manual')
     call b:runner.Read(a:filename)
   endif
 endfunction

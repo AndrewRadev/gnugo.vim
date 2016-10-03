@@ -1,6 +1,6 @@
-function! gnugo#runner#New(type)
-  if index(['black', 'white', 'manual'], a:type) < 0
-    echoerr "Game type can only be one of: black, white, manual"
+function! gnugo#runner#New(mode)
+  if index(['black', 'white', 'manual'], a:mode) < 0
+    echoerr "Game mode can only be one of: black, white, manual"
     return {}
   endif
 
@@ -8,13 +8,14 @@ function! gnugo#runner#New(type)
         \ 'output':  [],
         \ 'job':     v:null,
         \ 'channel': v:null,
-        \ 'type':    a:type,
+        \ 'mode':    a:mode,
         \
         \ 'last_command':       '',
         \ 'last_move_location': '',
         \
-        \ 'Start':  function('gnugo#runner#Start'),
-        \ 'Redraw': function('gnugo#runner#Redraw'),
+        \ 'Start':      function('gnugo#runner#Start'),
+        \ 'Redraw':     function('gnugo#runner#Redraw'),
+        \ 'ChangeMode': function('gnugo#runner#ChangeMode'),
         \
         \ 'Execute':    function('gnugo#runner#Execute'),
         \ 'Play':       function('gnugo#runner#Play'),
@@ -39,6 +40,26 @@ function! gnugo#runner#Start() dict
   let self.channel = job_info(self.job).channel
 endfunction
 
+function! gnugo#runner#ChangeMode(mode) dict
+  if index(['black', 'white', 'manual'], a:mode) < 0
+    echoerr "Game mode can only be one of: black, white, manual"
+    return 0
+  endif
+
+  let old_mode = self.mode
+  let new_mode = a:mode
+
+  if old_mode == 'black' && new_mode == 'white' ||
+        \ old_mode == 'white' && new_mode == 'black'
+    echomsg "You're changing ".old_mode." -> ".new_mode.", ".
+          \ "you probably want to :Cheat once to keep the game going"
+  endif
+
+  let self.mode = new_mode
+  call self.Redraw()
+  return 1
+endfunction
+
 function! gnugo#runner#Execute(command) dict
   call ch_sendraw(self.channel, a:command."\n")
   let [result, success] = self.Expect({
@@ -60,7 +81,7 @@ function! gnugo#runner#Execute(command) dict
     let move_location = substitute(result[-1], '^= \(.*\)', '\1', '')
   endif
 
-  if move_location !~ '^\s*$'
+  if move_location =~ '^[A-T]\d\+$'
     let self.last_move_location = move_location
   endif
 
@@ -69,11 +90,12 @@ function! gnugo#runner#Execute(command) dict
 endfunction
 
 function! gnugo#runner#Play(location) dict
-  if self.type == 'manual'
-    echoerr "In manual mode, use the :Execute command"
+  if self.mode == 'manual'
+    echomsg "In manual mode, use the :Execute command"
+    return
   endif
 
-  let color = self.type
+  let color = self.mode
 
   if color == 'black'
     let other_color = 'white'
@@ -87,8 +109,9 @@ function! gnugo#runner#Play(location) dict
 endfunction
 
 function! gnugo#runner#PlayCursor() dict
-  if self.type == 'manual'
-    echoerr "In manual mode, use the :Execute command"
+  if self.mode == 'manual'
+    echomsg "In manual mode, use the :Execute command"
+    return
   endif
 
   " Find the board line of the cursor:
@@ -99,7 +122,9 @@ function! gnugo#runner#PlayCursor() dict
 
   " Find the board column of the cursor:
   let saved_position = winsaveview()
-  if search('\%'.col('.').'c[A-T]', 'W') <= 0
+  let cursor_col = col('.')
+  normal! G0
+  if search('\%'.cursor_col.'c[A-T]', 'W') <= 0
     return
   endif
   let column = getline('.')[col('.') - 1]
@@ -109,11 +134,12 @@ function! gnugo#runner#PlayCursor() dict
 endfunction
 
 function! gnugo#runner#Cheat() dict
-  if self.type == 'manual'
-    echoerr "In manual mode, use the :Execute command"
+  if self.mode == 'manual'
+    echomsg "In manual mode, use the :Execute command"
+    return
   endif
 
-  let color = self.type
+  let color = self.mode
 
   if color == 'black'
     let other_color = 'white'
@@ -127,7 +153,7 @@ function! gnugo#runner#Cheat() dict
 endfunction
 
 function! gnugo#runner#Undo() dict
-  if self.type == 'manual'
+  if self.mode == 'manual'
     " undo the last move
     return self.Execute('undo')
   else
@@ -153,6 +179,7 @@ function! gnugo#runner#Redraw() dict
   call extend(output, [
         \ '= Last command:  '.self.last_command,
         \ '= Last location: '.self.last_move_location,
+        \ '= Game Mode:     '.self.mode,
         \ ])
   call extend(output, board)
 
