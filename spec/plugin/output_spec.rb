@@ -1,10 +1,10 @@
 require 'spec_helper'
 
 describe "Basic" do
-  it "starts a new GnuGo game" do
+  specify "starting a new GnuGo game" do
     vim.command 'Gnugo'
 
-    expect(buffer_contents).to eq normalize_string_indent(<<-EOF)
+    expect(get_buffer_contents).to eq normalize_string_indent(<<-EOF)
       = Last command:
       = Last location:
       = Game Mode:     black
