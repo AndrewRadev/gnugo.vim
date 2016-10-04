@@ -17,5 +17,9 @@ module Support
 
       buffer_lines[buffer_line][buffer_column]
     end
+
+    def get_last_position
+      get_buffer_contents[/^= Last location:\s+[A-T]\d+$/][/[A-T]\d+$/]
+    end
   end
 end
