@@ -144,6 +144,7 @@ function! gnugo#runner#PlayCursor(color) dict
   let cursor_col = col('.')
   normal! G0
   if search('\%'.cursor_col.'c[A-T]', 'W') <= 0
+    call winrestview(saved_position)
     return
   endif
   let column = getline('.')[col('.') - 1]
@@ -285,12 +286,16 @@ endfunction
 
 function! gnugo#runner#Write(filename) dict
   if self.Execute('printsgf '.a:filename)
-    exe 'file '.a:filename
+    if expand('%') == ''
+      exe 'file '.a:filename
+    endif
   endif
 endfunction
 
 function! gnugo#runner#Read(filename) dict
   if self.Execute('loadsgf '.a:filename)
-    exe 'file '.a:filename
+    if expand('%') == ''
+      exe 'file '.a:filename
+    endif
   endif
 endfunction

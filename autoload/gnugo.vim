@@ -24,8 +24,8 @@ endfunction
 function! gnugo#CreateSgfFile(filename)
   call gnugo#Init('', 'manual', '')
 
-  if confirm("Start new GnuGo game?")
-    let b:runner.Write(a:filename)
+  if confirm("Start new GnuGo game?", "&Yes\n&No") == 1
+    call b:runner.Write(a:filename)
   endif
 endfunction
 
@@ -34,7 +34,7 @@ function! gnugo#ReadSgfFile(filename)
     return
   endif
 
-  if confirm("Load saved GnuGo game?")
+  if confirm("Load saved GnuGo game?", "&Yes\n&No") == 1
     call gnugo#Init('', 'manual', '')
     call b:runner.Read(a:filename)
   endif

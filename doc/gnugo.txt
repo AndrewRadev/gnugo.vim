@@ -166,7 +166,25 @@ example, you can start the game with a different board size like so:
 
 Loading and saving ~
 
-TODO
+If you'd like to save your game, you can just |:write| the gnugo buffer to a
+.sgf file:
+>
+    :Gnugo black
+    :Play D4
+    :w strong_start.sgf
+>
+Later, you can load your game by simply editing that same .sgf file, either
+from Vim, with |:edit|, or from the command-line:
+>
+    $ vim strong_start.sgf
+<
+You'll be asked whether you want to resume your last game. The prompt is there
+to allow you to directly edit the sgf file, if you need to, for whatever
+reason (like if you're writing this particular Vim plugin and need to see the
+contents of the file).
+
+You can also edit a non-existing sgf file, and Vim will ask you if you'd like
+to start a new Go game with that name.
 
 
 ==============================================================================
