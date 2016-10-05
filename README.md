@@ -1,6 +1,6 @@
 Play the game of Go in your Vim! Use the cursor to move around on the board, press `<enter>` to place a stone. Ask the computer to `:Undo` your move or `:Cheat` and play for you. Save and load games by writing or editing a filename.
 
-![Screenshot](http://i.andrewradev.com/7bcbe35fb37eda28bc9c190ec3977666.png)
+![Demonstration](http://i.andrewradev.com/d1f1769d687d198b89a96decba4c8952.gif)
 
 ## Requirements
 
