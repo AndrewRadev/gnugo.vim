@@ -10,7 +10,7 @@ Vim 7.4 with a late enough patch level. Check the output of `:version`.
 You'll also need GnuGo installed, since Vim simply interacts with that
 program. For example, on Arch Linux, you can install it with:
 
-``` bash
+```
 # pacman -S gnugo
 ```
 
@@ -48,7 +48,7 @@ To start a new GnuGo game, just run the `:Gnugo` command. This will open a new b
    A B C D E F G H J K L M N O P Q R S T
 ```
 
-You play as black by default. To place a stone, position the cursor on an empty space (a "." or "+" character) and press the "<enter>" key. You can also use the "x" and "o" keys for the same purpose, but note that these keys have different meanings in "manual" mode. Either way, while playing as black or white, the computer will automatically play the next move with the other color.
+You play as black by default. To place a stone, position the cursor on an empty space (a "." or "+" character) and press the `<enter>` key. You can also use the "x" and "o" keys for the same purpose, but note that these keys have different meanings in "manual" mode. Either way, while playing as black or white, the computer will automatically play the next move with the other color.
 
 You can also place a stone by providing its coordinates to the `:Play` command:
 
@@ -135,7 +135,7 @@ If you'd like to save your game, you can just `:write` the gnugo buffer to a .sg
 
 Later, you can load your game by simply editing that same .sgf file, either from Vim, with `:edit`, or from the command-line:
 
-``` bash
+```
 $ vim strong_start.sgf
 ```
 

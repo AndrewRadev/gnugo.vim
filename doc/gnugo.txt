@@ -1,4 +1,4 @@
-*gnugo.txt*	Play Go in your text editor, using GnuGo
+*gnugo.txt*	Play the game of Go in your text editor, using GnuGo
 
 ==============================================================================
 CONTENTS                                                *gnugo*   *gnugo-contents*
