@@ -144,7 +144,7 @@ You'll be asked whether you want to resume your last game. The prompt is there t
 You can also edit a non-existing sgf file, and Vim will ask you if you'd like to start a new Go game with that name.
 
 
-### Settings
+## Settings
 
 ``` vim
 let g:gnugo_commandline_args = '--boardsize=13'
@@ -154,6 +154,6 @@ Default value: ""
 
 If you'd like to set some default command-line arguments to the GnuGo executable, you can provide them with this setting. An example might be a different default boardsize. You can still override this by invoking the `:Gnugo` command with arguments (although they will all be provided to the executable, GnuGo seems to take the last value given).
 
-### Internals
+## Internals
 
 The plugin uses Vim's job functions to spawn a `gnugo --mode gtp` process. The process is connected to the buffer, and when the buffer is closed, an autocommand sends the "quit" command to it. On my machine, this seems to keep the process around as a zombie for a few seconds, but it then gets reaped by the system. I figure it's not a big deal, so I've left it like this. If you understand processes better than me and know something different that should be done in this situation, please open an issue with your suggestion.
