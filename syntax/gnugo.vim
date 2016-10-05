@@ -7,7 +7,7 @@ syn match GnugoWhite "O"
 syn match GnugoBlankBackground "\s"
 syn match GnugoBackground "\.\|+"
 
-syn match GnugoHeader "\s*A B C D E F G H J K L M N O P Q R S T"
+syn match GnugoHeader "\s*A B C.*$"
 syn match GnugoMessage "\s*WHITE (O) has captured \d\+ stones"
 syn match GnugoMessage "\s*BLACK (X) has captured \d\+ stones"
 syn match GnugoMessage "^=.*"

@@ -1,5 +1,5 @@
-function! gnugo#Init(edit_command, game_type)
-  let runner = gnugo#runner#New(a:game_type)
+function! gnugo#Init(edit_command, game_type, args)
+  let runner = gnugo#runner#New(a:game_type, a:args)
   if empty(runner)
     return
   endif
@@ -11,19 +11,18 @@ function! gnugo#Init(edit_command, game_type)
 
   set filetype=gnugo
   set buftype=acwrite
+  set nonumber
 
   let b:runner = runner
   call b:runner.Start()
   call b:runner.Redraw()
 
-  " position cursor in a sensible place
+  " position cursor in a sensible place, at D4
   call cursor(21, 10)
 endfunction
 
-" TODO (2016-10-01) How to figure out the color?
-
 function! gnugo#CreateSgfFile(filename)
-  call gnugo#Init('', 'manual')
+  call gnugo#Init('', 'manual', '')
 
   if confirm("Start new GnuGo game?")
     let b:runner.Write(a:filename)
@@ -36,7 +35,7 @@ function! gnugo#ReadSgfFile(filename)
   endif
 
   if confirm("Load saved GnuGo game?")
-    call gnugo#Init('', 'manual')
+    call gnugo#Init('', 'manual', '')
     call b:runner.Read(a:filename)
   endif
 endfunction

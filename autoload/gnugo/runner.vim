@@ -1,14 +1,15 @@
-function! gnugo#runner#New(mode)
+function! gnugo#runner#New(mode, args)
   if index(['black', 'white', 'manual'], a:mode) < 0
     echoerr "Game mode can only be one of: black, white, manual"
     return {}
   endif
 
   return {
-        \ 'output':  [],
-        \ 'job':     v:null,
-        \ 'channel': v:null,
-        \ 'mode':    a:mode,
+        \ 'output':           [],
+        \ 'job':              v:null,
+        \ 'channel':          v:null,
+        \ 'mode':             a:mode,
+        \ 'commandline_args': a:args,
         \
         \ 'last_command':       '',
         \ 'last_move_location': '',
@@ -34,7 +35,7 @@ function! gnugo#runner#New(mode)
 endfunction
 
 function! gnugo#runner#Start() dict
-  let self.job = job_start('gnugo --mode gtp', {
+  let self.job = job_start('gnugo '.self.commandline_args.' --mode gtp', {
         \ 'out_cb': function(self.HandleOutput),
         \ 'err_cb': function(self.HandleError),
         \ })
@@ -121,9 +122,14 @@ function! gnugo#runner#Play(location) dict
         \ self.Execute('genmove '.other_color)
 endfunction
 
-function! gnugo#runner#PlayCursor() dict
-  if self.mode == 'manual'
-    echomsg "In manual mode, use the :Execute command"
+function! gnugo#runner#PlayCursor(color) dict
+  if index(['black', 'white', 'auto'], a:color) < 0
+    echoerr "Unexpected value for 'color': ".a:color
+    return
+  endif
+
+  if self.mode == 'manual' && a:color == 'auto'
+    echomsg "In manual mode, use the :Execute command or the 'o' and 'x' keys"
     return
   endif
 
@@ -143,7 +149,13 @@ function! gnugo#runner#PlayCursor() dict
   let column = getline('.')[col('.') - 1]
   call winrestview(saved_position)
 
-  call self.Play(column.line)
+  if self.mode == 'manual'
+    " play as the appropriate color
+    call self.Execute('play '.a:color.' '.column.line)
+  else
+    " doesn't matter what color we played as, play as the player's color:
+    call self.Play(column.line)
+  endif
 endfunction
 
 function! gnugo#runner#Cheat() dict

@@ -1,9 +1,10 @@
-*gnugo.txt*	TODO
+*gnugo.txt*	Play Go in your text editor, using GnuGo
 
 ==============================================================================
-CONTENTS                                        *gnugo*   *gnugo-contents*
+CONTENTS                                                *gnugo*   *gnugo-contents*
 
     Installation................................: |gnugo-installation|
+    Requirements................................: |gnugo-requirements|
     Usage.......................................: |gnugo-usage|
     Settings....................................: |gnugo-settings|
     Internals...................................: |gnugo-internals|
@@ -11,7 +12,7 @@ CONTENTS                                        *gnugo*   *gnugo-contents*
 
 
 ==============================================================================
-INSTALLATION                                            *gnugo-installation*
+INSTALLATION                                                *gnugo-installation*
 
 There are several ways to install the plugin. The recommended one is by using
 Tim Pope's pathogen (http://www.vim.org/scripts/script.php?script_id=2332). In
@@ -27,28 +28,167 @@ The command is (provided you're in ~/.vim):
 <
 
 Another way is to simply copy all the essential directories inside the ~/.vim
-directory: TODO list of directories
+directory: autoload, doc, ftdetect, ftplugin, plugin, syntax.
+
+==============================================================================
+REQUIREMENTS                                                *gnugo-requirements*
+
+This plugin requires Vim with |+job|. Vim 8 will do, but you can even use a
+Vim 7.4 with a late enough patch level. Check the output of |:version|.
+
+You'll also need GnuGo installed, since Vim simply interacts with that
+program. For example, on Arch Linux, you can install it with:
+>
+    # pacman -S gnugo
+<
+For other platforms, check the GnuGo project's homepage:
+https://www.gnu.org/software/gnugo/download.html.
 
 
 ==============================================================================
-USAGE                                                          *gnugo-usage*
+USAGE                                                              *gnugo-usage*
+                                                                        *:Gnugo*
+
+To start a new GnuGo game, just run the |:Gnugo| command. This will open a new
+buffer with an empty board:
+>
+    = Last command:
+    = Last location:
+    = Game Mode:     black
+    =
+       A B C D E F G H J K L M N O P Q R S T
+    19 . . . . . . . . . . . . . . . . . . . 19
+    18 . . . . . . . . . . . . . . . . . . . 18
+    17 . . . . . . . . . . . . . . . . . . . 17
+    16 . . . + . . . . . + . . . . . + . . . 16
+    15 . . . . . . . . . . . . . . . . . . . 15
+    14 . . . . . . . . . . . . . . . . . . . 14
+    13 . . . . . . . . . . . . . . . . . . . 13
+    12 . . . . . . . . . . . . . . . . . . . 12
+    11 . . . . . . . . . . . . . . . . . . . 11     WHITE (O) has captured 0 stones
+    10 . . . + . . . . . + . . . . . + . . . 10     BLACK (X) has captured 0 stones
+     9 . . . . . . . . . . . . . . . . . . . 9
+     8 . . . . . . . . . . . . . . . . . . . 8
+     7 . . . . . . . . . . . . . . . . . . . 7
+     6 . . . . . . . . . . . . . . . . . . . 6
+     5 . . . . . . . . . . . . . . . . . . . 5
+     4 . . . + . . . . . + . . . . . + . . . 4
+     3 . . . . . . . . . . . . . . . . . . . 3
+     2 . . . . . . . . . . . . . . . . . . . 2
+     1 . . . . . . . . . . . . . . . . . . . 1
+       A B C D E F G H J K L M N O P Q R S T
+<
+You play as black by default. To place a stone, position the cursor on an
+empty space (a "." or "+" character) and press the "<enter>" key. You can also
+use the "x" and "o" keys for the same purpose, but note that these keys have
+different meanings in "manual" mode. Either way, while playing as black or
+white, the computer will automatically play the next move with the other
+color.
+
+You can also play using coordinates with the `:Play` command:
+>
+    :Play D4
+<
+If you're unsure what to do next, you can cheat and have the computer play a
+move for you with the `:Cheat` command:
+>
+    :Cheat
+<
+If you'd like to undo the last move, you can use the `:Undo` command:
+>
+    :Undo
+<
+While you're playing as black or white, the command will undo two moves -- the
+last computer move, and your last move. If you're in "manual" mode, it will
+only undo one move. If you'd like, you can map this command to the "u" key for
+this buffer, by creating the file `~/.vim/ftplugin/gnugo.vim` and mapping it
+only for this buffer:
+>
+    :nnoremap <buffer> u :Undo<cr>
+<
+But be careful -- this means that, if you accidentally delete something in the
+buffer, you can't undo it -- the "u" key now means something else.
+
+You can redraw the board with the `:Redraw` command:
+>
+    :Redraw
+<
+
+Changing colors ~
+
+If you'd like to play as white, you can start the game with:
+>
+    :Gnugo white
+<
+If you'd like to change sides halfway through, you can use the `:ChangeMode`
+command. Note that, if you're currently playing as black, you probably want to
+`:Cheat` once, since the last move was probably the computer's, and the
+computer should now play with your former color.
+>
+    :ChangeMode white
+    :Cheat
+<
+The same thing goes if you're playing with the white pieces and would like to
+switch to playing with the black ones.
+
+
+Manual mode ~
+
+You can run the game in "manual" mode, which means the computer doesn't
+automatically play against you, and you don't automatically play with a
+particular color.
+
+In this mode, you can't use `:Play` or `:Cheat`, you need to use the
+`:Execute` command, which lets you send commands directly to GnuGo's gtp
+server:
+>
+    " play as black, on D4
+    :Execute play black D4
+
+    " have the computer generate a move for white
+    :Execute genmove white
+
+You can now play several times with black/white, if you're so inclined, and
+you can play with another person on the same machine. For convenience's sake,
+you can use the `o` key to play a white move, and the `x` key to play a black
+move (in the ASCII representation of the board, black pieces are marked with
+"X" and white pieces are marked as "O").
+
+
+Additional arguments ~
+
+When starting the game, you can provide additional arguments that are fed
+directly to the gnugo command. Check `gnugo --help` for details. As an
+example, you can start the game with a different board size like so:
+>
+    :Gnugo black --boardsize=13
+<
+
+Loading and saving ~
 
 TODO
 
 
 ==============================================================================
-SETTINGS                                                    *gnugo-settings*
+SETTINGS                                                        *gnugo-settings*
 
 TODO
 
 
 ==============================================================================
-INTERNALS                                                  *gnugo-internals*
+INTERNALS                                                      *gnugo-internals*
 
-TODO
+The plugin uses Vim's job functions to spawn a `gnugo --mode gtp` process. The
+process is connected to the buffer, and when the buffer is closed, an
+autocommand sends the "quit" command to it. On my machine, this seems to keep
+the process around as a zombie for a few seconds, but it then gets reaped by
+the system. I figure it's not a big deal, so I've left it like this. If you
+understand processes better than me and know something different that should
+         be done in this situation, please open an issue with your suggestion.
+
 
 ==============================================================================
-ISSUES                                                        *gnugo-issues*
+ISSUES                                                            *gnugo-issues*
 
 Any issues and suggestions are very welcome on the github bugtracker:
 https://github.com/AndrewRadev/gnugo.vim/issues
