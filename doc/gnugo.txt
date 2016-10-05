@@ -85,7 +85,8 @@ different meanings in "manual" mode. Either way, while playing as black or
 white, the computer will automatically play the next move with the other
 color.
 
-You can also play using coordinates with the `:Play` command:
+You can also place a stone by providing its coordinates to the `:Play`
+command:
 >
     :Play D4
 <
@@ -147,7 +148,7 @@ server:
 
     " have the computer generate a move for white
     :Execute genmove white
-
+<
 You can now play several times with black/white, if you're so inclined, and
 you can play with another person on the same machine. For convenience's sake,
 you can use the `o` key to play a white move, and the `x` key to play a black
@@ -172,7 +173,7 @@ If you'd like to save your game, you can just |:write| the gnugo buffer to a
     :Gnugo black
     :Play D4
     :w strong_start.sgf
->
+<
 Later, you can load your game by simply editing that same .sgf file, either
 from Vim, with |:edit|, or from the command-line:
 >
@@ -213,7 +214,7 @@ autocommand sends the "quit" command to it. On my machine, this seems to keep
 the process around as a zombie for a few seconds, but it then gets reaped by
 the system. I figure it's not a big deal, so I've left it like this. If you
 understand processes better than me and know something different that should
-         be done in this situation, please open an issue with your suggestion.
+be done in this situation, please open an issue with your suggestion.
 
 
 ==============================================================================
