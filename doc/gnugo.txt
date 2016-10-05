@@ -190,7 +190,18 @@ to start a new Go game with that name.
 ==============================================================================
 SETTINGS                                                        *gnugo-settings*
 
-TODO
+                                                      *g:gnugo_commandline_args*
+>
+    let g:gnugo_commandline_args = '--boardsize=13'
+<
+Default value: ""
+
+If you'd like to set some default command-line arguments to the GnuGo
+executable, you can provide them with this setting. An example might be a
+different default boardsize. You can still override this by invoking the
+|:Gnugo| command with arguments (although they will all be provided to the
+executable, GnuGo seems to take the last value given).
+
 
 
 ==============================================================================

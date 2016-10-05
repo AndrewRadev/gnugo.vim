@@ -35,7 +35,9 @@ function! gnugo#runner#New(mode, args)
 endfunction
 
 function! gnugo#runner#Start() dict
-  let self.job = job_start('gnugo '.self.commandline_args.' --mode gtp', {
+  let commandline_args = g:gnugo_commandline_args.' '.self.commandline_args
+
+  let self.job = job_start('gnugo '.commandline_args.' --mode gtp', {
         \ 'out_cb': function(self.HandleOutput),
         \ 'err_cb': function(self.HandleError),
         \ })

@@ -6,6 +6,10 @@ let g:loaded_gnugo = '0.0.1' " version number
 let s:keepcpo = &cpo
 set cpo&vim
 
+if !exists('g:gnugo_commandline_args')
+  let g:gnugo_commandline_args = ''
+endif
+
 command! -nargs=* -complete=custom,s:GnugoComplete Gnugo call s:Gnugo(<q-args>)
 function! s:Gnugo(params)
   if a:params =~ '^\w\+'
