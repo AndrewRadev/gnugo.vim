@@ -10,6 +10,7 @@ function! gnugo#runner#New(mode, args)
         \ 'channel':          v:null,
         \ 'mode':             a:mode,
         \ 'commandline_args': a:args,
+        \ 'finished':         v:false,
         \
         \ 'last_command':       '',
         \ 'last_move_location': '',
@@ -22,6 +23,7 @@ function! gnugo#runner#New(mode, args)
         \ 'Execute':    function('gnugo#runner#Execute'),
         \ 'Play':       function('gnugo#runner#Play'),
         \ 'PlayCursor': function('gnugo#runner#PlayCursor'),
+        \ 'Pass':       function('gnugo#runner#Pass'),
         \ 'Cheat':      function('gnugo#runner#Cheat'),
         \ 'Undo':       function('gnugo#runner#Undo'),
         \
@@ -59,7 +61,7 @@ endfunction
 function! gnugo#runner#ChangeMode(mode) dict
   if index(['black', 'white', 'manual'], a:mode) < 0
     echoerr "Game mode can only be one of: black, white, manual"
-    return 0
+    return v:false
   endif
 
   let old_mode = self.mode
@@ -73,7 +75,7 @@ function! gnugo#runner#ChangeMode(mode) dict
 
   let self.mode = new_mode
   call self.Redraw()
-  return 1
+  return v:true
 endfunction
 
 function! gnugo#runner#Execute(command) dict
@@ -85,7 +87,7 @@ function! gnugo#runner#Execute(command) dict
 
   if !success
     echoerr join(result, "\n")
-    return 0
+    return v:false
   endif
 
   let self.last_command = a:command
@@ -97,12 +99,14 @@ function! gnugo#runner#Execute(command) dict
     let move_location = substitute(result[-1], '^= \(.*\)', '\1', '')
   endif
 
-  if move_location =~ '^[A-T]\d\+$'
+  if move_location == 'PASS'
+    let self.last_move_location = 'PASS'
+  elseif move_location =~ '^[A-T]\d\+$'
     let self.last_move_location = move_location
   endif
 
   call self.Redraw()
-  return 1
+  return v:true
 endfunction
 
 function! gnugo#runner#Play(location) dict
@@ -111,8 +115,12 @@ function! gnugo#runner#Play(location) dict
     return
   endif
 
-  let color = self.mode
+  if self.finished
+    echomsg "Game is over, but you can `ChangeMode manual` and then `:Execute` commands."
+    return
+  endif
 
+  let color = self.mode
   if color == 'black'
     let other_color = 'white'
   else
@@ -124,9 +132,47 @@ function! gnugo#runner#Play(location) dict
         \ self.Execute('genmove '.other_color)
 endfunction
 
+function! gnugo#runner#Pass() dict
+  if self.mode == 'manual'
+    echomsg "In manual mode, use the :Execute command"
+    return
+  endif
+
+  if self.finished
+    echomsg "Game is over, but you can `ChangeMode manual` and then `:Execute` commands."
+    return
+  endif
+
+  let color = self.mode
+  if color == 'black'
+    let other_color = 'white'
+  else
+    let other_color = 'black'
+  endif
+
+  if self.last_move_location == "PASS"
+    " both have passed, time to score
+    let self.finished = v:true
+    call self.Redraw()
+  else
+    call self.Execute('genmove '.other_color)
+
+    if self.last_move_location == "PASS"
+      " both have passed, time to score
+      let self.finished = v:true
+      call self.Redraw()
+    endif
+  endif
+endfunction
+
 function! gnugo#runner#PlayCursor(color) dict
   if index(['black', 'white', 'auto'], a:color) < 0
     echoerr "Unexpected value for 'color': ".a:color
+    return
+  endif
+
+  if self.finished
+    echomsg "Game is over, but you can `ChangeMode manual` and then `:Execute` commands."
     return
   endif
 
@@ -167,6 +213,11 @@ function! gnugo#runner#Cheat() dict
     return
   endif
 
+  if self.finished
+    echomsg "Game is over, but you can `ChangeMode manual` and then `:Execute` commands."
+    return
+  endif
+
   let color = self.mode
 
   if color == 'black'
@@ -181,6 +232,11 @@ function! gnugo#runner#Cheat() dict
 endfunction
 
 function! gnugo#runner#Undo() dict
+  if self.finished
+    echomsg "Game is over, but you can `ChangeMode manual` and then `:Execute` commands."
+    return
+  endif
+
   if self.mode == 'manual'
     " undo the last move
     return self.Execute('undo')
@@ -204,11 +260,34 @@ function! gnugo#runner#Redraw() dict
   endif
 
   let output = []
-  call extend(output, [
-        \ '= Last command:  '.self.last_command,
-        \ '= Last location: '.self.last_move_location,
-        \ '= Game Mode:     '.self.mode,
-        \ ])
+
+  if self.finished
+    call ch_sendraw(self.channel, "final_score\n")
+    let [raw_result, _] = self.Expect({'success': '^='})
+    let result = matchstr(raw_result[-1], '^= \zs.*')
+
+    let [color_code, score] = split(result, '+')
+    if color_code == 'B'
+      let winning_color = 'Black'
+    elseif color_code == 'W'
+      let winning_color = 'White'
+    else
+      let winning_color = '???'
+    endif
+
+    call extend(output, [
+          \ '=',
+          \ '= Final result: '.winning_color.' wins by '.score.' points',
+          \ '=',
+          \ ])
+  else
+    call extend(output, [
+          \ '= Last command:  '.self.last_command,
+          \ '= Last location: '.self.last_move_location,
+          \ '= Game Mode:     '.self.mode,
+          \ ])
+  endif
+
   call extend(output, board)
 
   let saved_view = winsaveview()

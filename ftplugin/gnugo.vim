@@ -1,5 +1,6 @@
 command! -buffer -nargs=* Execute call b:runner.Execute(<q-args>)
 command! -buffer -nargs=* Play    call b:runner.Play(<q-args>)
+command! -buffer -nargs=0 Pass    call b:runner.Pass()
 command! -buffer -nargs=0 Undo    call b:runner.Undo()
 command! -buffer -nargs=0 Cheat   call b:runner.Cheat()
 command! -buffer -nargs=0 Redraw  call b:runner.Redraw()
