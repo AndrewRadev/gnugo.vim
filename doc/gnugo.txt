@@ -204,6 +204,38 @@ different default boardsize. You can still override this by invoking the
 executable, GnuGo seems to take the last value given).
 
 
+                                                   *g:gnugo_load_game_from_file*
+>
+    let g:gnugo_load_game_from_file = "never"
+<
+Default value:   "ask"
+Possible values: "always", "never", "ask"
+
+If this is set to "ask", the plugin will ask for confirmation whether to load
+the game when a compatible .sgf file is edited. If it's set to "always", it
+will just go ahead and load it directly. This means you'll generally have a
+hard time reading the actual contents of said file, so if you'd like to take a
+peek at it at some point for whatever reason, you should leave it as the
+default, "ask". You could also skip the loading with "never", but you would
+have a harder time loading a game (you'd have to run `:Execute loadsgf
+<filename>` with no filename completion).
+
+
+                                                    *g:gnugo_new_game_from_file*
+>
+    let g:gnugo_new_game_from_file = "ask"
+<
+Default value:   "ask"
+Possible values: "always", "never", "ask"
+
+If this is set to "ask", the plugin will ask for confirmation whether to start
+a new game when a new file with the "sgf" extension is edited. If it's set to
+"always", it will just go ahead and start a new game. This means you won't be
+able to create and edit a .sgf file directly, ever, so if you'd like to be
+able to do that, you could leave it as the default, "ask". You could also skip
+this functionality altogether with "never", and make a named game by writing
+the contents to a file after starting it.
+
 
 ==============================================================================
 INTERNALS                                                      *gnugo-internals*

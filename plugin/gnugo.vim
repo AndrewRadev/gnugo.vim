@@ -10,6 +10,16 @@ if !exists('g:gnugo_commandline_args')
   let g:gnugo_commandline_args = ''
 endif
 
+if !exists('g:gnugo_load_game_from_file')
+  " Possible values: "always" ,"never", "ask"
+  let g:gnugo_load_game_from_file = "ask"
+endif
+
+if !exists('g:gnugo_new_game_from_file')
+  " Possible values: "always" ,"never", "ask"
+  let g:gnugo_new_game_from_file = "ask"
+endif
+
 command! -nargs=* -complete=custom,s:GnugoComplete Gnugo call s:Gnugo(<q-args>)
 function! s:Gnugo(params)
   if a:params =~ '^\w\+'
