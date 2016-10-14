@@ -13,6 +13,7 @@ function! gnugo#runner#New(mode, args)
         \ 'finished':         v:false,
         \
         \ 'last_command':       '',
+        \ 'last_response':      [],
         \ 'last_move_location': '',
         \
         \ 'Start':      function('gnugo#runner#Start'),
@@ -91,6 +92,7 @@ function! gnugo#runner#Execute(command) dict
   endif
 
   let self.last_command = a:command
+  let self.last_response = result
 
   if a:command =~ '^\s*play'
     " we won't get the move in the result, take it from the command:
@@ -377,6 +379,13 @@ function! gnugo#runner#Read(filename) dict
   if self.Execute('loadsgf '.a:filename)
     if expand('%') == ''
       exe 'file '.a:filename
+    endif
+
+    let color_pattern =  '=\s*\zs\%(black\|white\)$'
+
+    if self.last_response[-1] =~ color_pattern
+      let player_color = matchstr(self.last_response[-1], color_pattern)
+      call self.ChangeMode(player_color)
     endif
   endif
 endfunction
