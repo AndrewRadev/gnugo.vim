@@ -13,6 +13,10 @@ function! gnugo#Init(edit_command, game_type, args)
   set buftype=acwrite
   set nonumber
 
+  if exists('b:runner')
+    call b:runner.Quit()
+  endif
+
   let b:runner = runner
   call b:runner.Start()
   call b:runner.Redraw()

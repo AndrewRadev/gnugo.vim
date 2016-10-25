@@ -48,6 +48,11 @@ function! gnugo#runner#Start() dict
 endfunction
 
 function! gnugo#runner#Quit() dict
+  if ch_status(self.channel) == 'closed'
+    " already quit, nothing to do
+    return
+  endif
+
   call ch_sendraw(self.channel, "quit\n")
   let [result, success] = self.Expect({
         \ 'success': '^=',
