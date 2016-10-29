@@ -133,6 +133,18 @@ The same thing goes if you're playing with the white pieces and would like to
 switch to playing with the black ones.
 
 
+Endgame ~
+
+In order to pass your turn, use the `:Pass` command:
+>
+    :Pass
+<
+If the computer also passes, or if you pass after the computer, the game will
+be over and the result will be displayed. After that happens, there's no going
+back, so if you'd like to do a recount or something, you'll have to fall back
+to using the GnuGo program directly.
+
+
 Manual mode ~
 
 You can run the game in "manual" mode, which means the computer doesn't
