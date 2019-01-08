@@ -40,20 +40,33 @@ endfunction
 function! gnugo#runner#Start() dict
   let commandline_args = g:gnugo_commandline_args.' '.self.commandline_args
 
-  let self.job = job_start('gnugo '.commandline_args.' --mode gtp', {
-        \ 'out_cb': function(self.HandleOutput),
-        \ 'err_cb': function(self.HandleError),
+  " add on_exit?
+  let self.job = async#job#start('gnugo '.commandline_args.' --mode gtp', {
+        \ 'on_stdout': function(self.HandleOutput),
+        \ 'on_stderr': function(self.HandleError),
         \ })
-  let self.channel = job_info(self.job).channel
+  let self.channel = self.job
 endfunction
 
-function! gnugo#runner#Quit() dict
-  if ch_status(self.channel) == 'closed'
-    " already quit, nothing to do
-    return
-  endif
+" function! async#job#start(cmd, opts) abort
+"     return s:job_start(a:cmd, a:opts)
+" endfunction
+"
+" function! async#job#stop(jobid) abort
+"     call s:job_stop(a:jobid)
+" endfunction
+"
+" function! async#job#send(jobid, data) abort
+"     call s:job_send(a:jobid, a:data)
+" endfunction
+"
+" function! async#job#wait(jobids, ...) abort
+"     let l:timeout = get(a:000, 0, -1)
+"     return s:job_wait(a:jobids, l:timeout)
+" endfunction
 
-  call ch_sendraw(self.channel, "quit\n")
+function! gnugo#runner#Quit() dict
+  call async#job#send(self.channel, ["quit"])
   let [result, success] = self.Expect({
         \ 'success': '^=',
         \ 'failure': '^?'
@@ -85,7 +98,7 @@ function! gnugo#runner#ChangeMode(mode) dict
 endfunction
 
 function! gnugo#runner#Execute(command) dict
-  call ch_sendraw(self.channel, a:command."\n")
+  call async#job#send(self.channel, [a:command])
   let [result, success] = self.Expect({
         \ 'success': '^=',
         \ 'failure': '^?'
@@ -256,7 +269,7 @@ function! gnugo#runner#Undo() dict
 endfunction
 
 function! gnugo#runner#Redraw() dict
-  call ch_sendraw(self.channel, "showboard\n")
+  call async#job#send(self.channel, ["showboard"])
   let [board, _] = self.Expect({
         \ 'success': 'A B C',
         \ 'count': 2
@@ -269,7 +282,7 @@ function! gnugo#runner#Redraw() dict
   let output = []
 
   if self.finished
-    call ch_sendraw(self.channel, "final_score\n")
+    call async#job#send(self.channel, ["final_score"])
     let [raw_result, _] = self.Expect({'success': '^='})
     let result = matchstr(raw_result[-1], '^= \zs.*')
 
