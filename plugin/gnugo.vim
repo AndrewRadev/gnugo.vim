@@ -37,5 +37,12 @@ function! s:GnugoComplete(A, L, P)
   return join(['black', 'white', 'manual'], "\n")
 endfunction
 
+command! -nargs=1 -complete=file GnugoLoad call s:GnugoLoad(<q-args>)
+function! s:GnugoLoad(file)
+  exe 'edit ' . a:file
+  call gnugo#Init('', 'manual', '')
+  call b:runner.Read(a:file)
+endfunction
+
 let &cpo = s:keepcpo
 unlet s:keepcpo

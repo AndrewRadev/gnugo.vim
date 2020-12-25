@@ -36,7 +36,7 @@ function! gnugo#CreateSgfFile(filename)
   endif
 endfunction
 
-function! gnugo#ReadSgfFile(filename)
+function! gnugo#ReadFile(filename)
   if join(getline(1, 5), "\n") !~ 'GN[GNU Go'
     return
   endif
