@@ -141,7 +141,13 @@ $ vim strong_start.sgf
 
 You'll be asked whether you want to resume your last game. The prompt is there to allow you to directly edit the sgf file, if you need to, for whatever reason (like if you're writing this particular Vim plugin and need to see the contents of the file).
 
-You can also edit a non-existing sgf file, and Vim will ask you if you'd like to start a new Go game with that name.
+You can also edit a non-existing sgf file, and Vim will ask you if you'd like to start a new Go game with that name. Note that the file extension needs to be `.sgf`. If you'd like to open a savegame file with a different extension, use the `:GnugoLoad` command:
+
+``` vim
+GnugoLoad saved_file.txt
+```
+
+This will read the file and start the game in the current buffer, so be sure to open one with `:new` if you're currently editing something else.
 
 ## Internals
 

@@ -199,8 +199,8 @@ contents of the file).
 
 You can also edit a non-existing sgf file, and Vim will ask you if you'd like
 to start a new Go game with that name. Note that the file extension needs to
-be `.sgf`. If you'd like to open some other kind of file, use the `:GnugoLoad`
-command:
+be `.sgf`. If you'd like to open a savegame file with a different extension,
+use the `:GnugoLoad` command:
 >
     GnugoLoad saved_file.txt
 <
