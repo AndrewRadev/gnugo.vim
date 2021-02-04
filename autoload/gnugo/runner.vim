@@ -41,10 +41,7 @@ function! gnugo#runner#Start() dict
   let commandline_args = g:gnugo_commandline_args.' '.self.commandline_args
 
   " add on_exit?
-  let self.job = gnugo#async#start('gnugo '.commandline_args.' --mode gtp', {
-        \ 'on_stdout': function(self.HandleOutput),
-        \ 'on_stderr': function(self.HandleError),
-        \ })
+  let self.job = gnugo#async#start(self, 'gnugo '.commandline_args.' --mode gtp')
   let self.channel = self.job
 endfunction
 
@@ -301,12 +298,12 @@ function! gnugo#runner#Redraw() dict
   call winrestview(saved_view)
 endfunction
 
-function! gnugo#runner#HandleOutput(unused, line) dict
-  call add(self.output, a:line)
+function! gnugo#runner#HandleOutput(lines) dict
+  call extend(self.output, a:lines)
 endfunction
 
-function! gnugo#runner#HandleError(unused, line) dict
-  echoerr "Error: ".a:line
+function! gnugo#runner#HandleError(lines) dict
+  echoerr "Error: ".string(a:lines)
 endfunction
 
 function! gnugo#runner#Expect(params) dict
