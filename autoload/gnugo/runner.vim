@@ -299,10 +299,23 @@ function! gnugo#runner#Redraw() dict
 endfunction
 
 function! gnugo#runner#HandleOutput(lines) dict
-  call extend(self.output, a:lines)
+  let lines = a:lines
+
+  if has('nvim') && len(self.output) > 0
+    " then the last line of the output is going to be incomplete:
+    let self.output[-1] .= lines[0]
+    let lines = lines[1:]
+  endif
+
+  call extend(self.output, lines)
 endfunction
 
 function! gnugo#runner#HandleError(lines) dict
+  if has('nvim') && a:lines == ['']
+    " it's fine, this is a signal for EOF
+    return
+  endif
+
   echoerr "Error: ".string(a:lines)
 endfunction
 

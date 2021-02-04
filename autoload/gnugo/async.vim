@@ -6,8 +6,6 @@ function! gnugo#async#start(runner, command) abort
     return jobstart(a:command, {
           \ 'on_stdout': {_j, lines, _e -> runner.HandleOutput(lines)},
           \ 'on_stderr': {_j, lines, _e -> runner.HandleError(lines)},
-          \ 'stdout_buffered': v:true,
-          \ 'stderr_buffered': v:true,
           \ })
   else
     let job = job_start(a:command, {
