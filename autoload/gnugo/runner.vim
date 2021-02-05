@@ -46,15 +46,19 @@ function! gnugo#runner#Start() dict
 endfunction
 
 function! gnugo#runner#Quit() dict
-  call gnugo#async#send(self.channel, "quit")
-  let [result, success] = self.Expect({
-        \ 'success': '^=',
-        \ 'failure': '^?'
-        \ })
+  try
+    call gnugo#async#send(self.channel, "quit")
+    let [result, success] = self.Expect({
+          \ 'success': '^=',
+          \ 'failure': '^?'
+          \ })
 
-  if !success
-    echoerr join(result, "\n")
-  endif
+    if !success
+      echoerr join(result, "\n")
+    endif
+  catch /E900:/ " Invalid channel id
+    " Must have closed on us, ignore the error
+  endtry
 endfunction
 
 function! gnugo#runner#ChangeMode(mode) dict
