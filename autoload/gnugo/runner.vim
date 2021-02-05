@@ -40,28 +40,25 @@ endfunction
 function! gnugo#runner#Start() dict
   let commandline_args = g:gnugo_commandline_args.' '.self.commandline_args
 
-  let self.job = job_start('gnugo '.commandline_args.' --mode gtp', {
-        \ 'out_cb': function(self.HandleOutput),
-        \ 'err_cb': function(self.HandleError),
-        \ })
-  let self.channel = job_info(self.job).channel
+  " add on_exit?
+  let self.job = gnugo#async#start(self, 'gnugo '.commandline_args.' --mode gtp')
+  let self.channel = self.job
 endfunction
 
 function! gnugo#runner#Quit() dict
-  if ch_status(self.channel) == 'closed'
-    " already quit, nothing to do
-    return
-  endif
+  try
+    call gnugo#async#send(self.channel, "quit")
+    let [result, success] = self.Expect({
+          \ 'success': '^=',
+          \ 'failure': '^?'
+          \ })
 
-  call ch_sendraw(self.channel, "quit\n")
-  let [result, success] = self.Expect({
-        \ 'success': '^=',
-        \ 'failure': '^?'
-        \ })
-
-  if !success
-    echoerr join(result, "\n")
-  endif
+    if !success
+      echoerr join(result, "\n")
+    endif
+  catch /E900:/ " Invalid channel id
+    " Must have closed on us, ignore the error
+  endtry
 endfunction
 
 function! gnugo#runner#ChangeMode(mode) dict
@@ -85,7 +82,7 @@ function! gnugo#runner#ChangeMode(mode) dict
 endfunction
 
 function! gnugo#runner#Execute(command) dict
-  call ch_sendraw(self.channel, a:command."\n")
+  call gnugo#async#send(self.channel, a:command)
   let [result, success] = self.Expect({
         \ 'success': '^=',
         \ 'failure': '^?'
@@ -256,7 +253,7 @@ function! gnugo#runner#Undo() dict
 endfunction
 
 function! gnugo#runner#Redraw() dict
-  call ch_sendraw(self.channel, "showboard\n")
+  call gnugo#async#send(self.channel, "showboard")
   let [board, _] = self.Expect({
         \ 'success': 'A B C',
         \ 'count': 2
@@ -269,7 +266,7 @@ function! gnugo#runner#Redraw() dict
   let output = []
 
   if self.finished
-    call ch_sendraw(self.channel, "final_score\n")
+    call gnugo#async#send(self.channel, "final_score")
     let [raw_result, _] = self.Expect({'success': '^='})
     let result = matchstr(raw_result[-1], '^= \zs.*')
 
@@ -305,12 +302,25 @@ function! gnugo#runner#Redraw() dict
   call winrestview(saved_view)
 endfunction
 
-function! gnugo#runner#HandleOutput(unused, line) dict
-  call add(self.output, a:line)
+function! gnugo#runner#HandleOutput(lines) dict
+  let lines = a:lines
+
+  if has('nvim') && len(self.output) > 0
+    " then the last line of the output is going to be incomplete:
+    let self.output[-1] .= lines[0]
+    let lines = lines[1:]
+  endif
+
+  call extend(self.output, lines)
 endfunction
 
-function! gnugo#runner#HandleError(unused, line) dict
-  echoerr "Error: ".a:line
+function! gnugo#runner#HandleError(lines) dict
+  if has('nvim') && a:lines == ['']
+    " it's fine, this is a signal for EOF
+    return
+  endif
+
+  echoerr "Error: ".string(a:lines)
 endfunction
 
 function! gnugo#runner#Expect(params) dict
