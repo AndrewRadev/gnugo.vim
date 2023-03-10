@@ -4,11 +4,9 @@ Play the game of Go in your Vim! Use the cursor to move around on the board, pre
 
 ## Requirements
 
-This plugin requires Vim with `+job`. Vim 8 will do, but you can even use a
-Vim 7.4 with a late enough patch level. Check the output of `:version`.
+This plugin requires Vim with `+job`. Vim 8 will do, but you can even use a Vim 7.4 with a late enough patch level. Check the output of `:version`. It should also work on Neovim, but it hasn't been tested with recent versions.
 
-You'll also need GnuGo installed, since Vim simply interacts with that
-program. For example, on Arch Linux, you can install it with:
+You'll also need GnuGo installed, since Vim simply interacts with that program. For example, on Arch Linux, you can install it with:
 
 ```
 # pacman -S gnugo
