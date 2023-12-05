@@ -22,6 +22,11 @@ endif
 
 command! -nargs=* -complete=custom,s:GnugoComplete Gnugo call s:Gnugo(<q-args>)
 function! s:Gnugo(params)
+  if !executable('gnugo')
+    echoerr "Couldn't find a `gnugo` executable, try installing it first"
+    return
+  endif
+
   if a:params =~ '^\w\+'
     let game_type = matchstr(a:params, '^\w\+')
     let args      = matchstr(a:params, '^\w\+\s*\zs.*$')
